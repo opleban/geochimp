@@ -1,5 +1,7 @@
 get "/" do
-  #main page
+  erb :login
+  #login page
+  #graphic
 end
 
 get "/users/:id" do
@@ -10,11 +12,12 @@ end
 
 get "/surveys" do
   #list of all surveys
-  # will provide a list of all surveys
+  #will provide a list of all surveys
 end
 
 get "/surveys/:id" do
   #individual survey
+  #lists all questions in survey
 end
 
 get "/surveys/new" do
@@ -29,6 +32,7 @@ post "/surveys/new" do
 end
 
 delete "/surveys/:id/delete" do
+  #will allow the option to delete a survey and all associated questions
 end
 
 
