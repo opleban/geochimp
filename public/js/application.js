@@ -26,18 +26,22 @@ function eventDelegator(e){
     case("user"):
     break;
   }
+
   function getAndShowResponses(e){
     ajaxRequest = $.ajax({
       url: "/questions/"+ e.target.attr("id")+"/responses",
       type: 'get'
-    }).done();
-    // mapResponses
-    // function mapResponses(data){
-    //   parseResponses(data);
-    //   placeResponsesOnMap();
-    //   function parseResponses(data){
-    //   }
+    }).done(renderResponses);
+
+    function renderResponses(data){
+      var parsedData = parseResponses(data);
+      mapResponsesOnMap(parsedData);
+
+      function parseResponses(data){
+        console.log(data);
+      }
     }
+  }
     function getSurveyQuestions(e){
       var ajaxRequest = $.ajax({
         url:"/surveys/" + $(e.target).attr("id"),
@@ -51,9 +55,10 @@ function eventDelegator(e){
 
 
 
-if ($('#map'))
+if ($('#map')){
   bindEvents();
-initializeMap();
+  initializeMap();
+}
 
 // L.marker([37.78, -122.40]).addTo(map)
 //     .bindPopup('A pretty CSS3 popup. <br> Easily customizable.')

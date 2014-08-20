@@ -27,7 +27,7 @@ end
 get "/surveys/:id" do
   @survey = Survey.find(params[:id])
   @questions = @survey.questions
-  questions_html = erb :question_list, layout => false
+  questions_html = erb :question_list, :layout => false
   content_type :json
   {questions_html:questions_html}.to_json
   #individual survey

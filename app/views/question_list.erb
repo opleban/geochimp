@@ -1,8 +1,8 @@
 <h2>Questions</h2>
-<ul class="span_3_of_9 float_right">
-  <%= @questions.each do |question| %>
+<ul>
+  <% @questions.each do |question| %>
     <li class="question" id="<%= question.id %>">
       <%= question.content %>
     </li>
-  <%= end %>
+  <% end %>
 </ul>
