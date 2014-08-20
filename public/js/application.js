@@ -2,19 +2,40 @@
 //   show survey result page with mapped respondent data
 // initialize map
 function initializeMap(){
-  L.map('map').setView([37.78, -122.40], 15);
-  L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a>
-      contributors'}).addTo(map);
+  var map = L.map('map', { zoomControl:false }).setView([37.78, -122.40], 15);
+  var googleLayer = new L.Google("ROADMAP");
+  map.addLayer(googleLayer);
+
 }
 
-function getRespondents(){
-  ajaxRequest = $.ajax({
-    url: ""
-  })
+function bindEvents() {
+  $('body').on("click", eventDelegator);
+}
+
+function eventDelegator(e){
+  e.preventDefault();
+  var $target = $(e.target);
+  switch($target.attr("class")){
+    case("question"):
+    getResponses(e);
+    break;
+    case("user"):
+    deleteTodo(e);
+    break;
+  }
 }
 
 
-L.marker([37.78, -122.40]).addTo(map)
-    .bindPopup('A pretty CSS3 popup. <br> Easily customizable.')
-    .openPopup();
+if ($('#map'))
+  initializeMap()
+
+// function getResponses(e){
+//   ajaxRequest = $.ajax({
+//     url: "/questions/"+ e.target.attr("id")+/responses"",
+//   })
+// }
+
+
+// L.marker([37.78, -122.40]).addTo(map)
+//     .bindPopup('A pretty CSS3 popup. <br> Easily customizable.')
+//     .openPopup();

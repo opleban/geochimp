@@ -1,5 +1,5 @@
 get '/' do
-  erb :index
+  erb :map_view
   #login page
   #graphic
 end
@@ -44,6 +44,9 @@ delete "/surveys/:id/delete" do
 end
 
 get "/questions/:id/responses" do
-  @questions = Question.find(params[:id])
-  @responses =
+  question = Question.find(params[:id])
+  responses = questions.responses
+  respondents = responses.map{ |response| response.user}
+  content_type :json
+  {question:question, responses:responses, respondents:respondents}.to_json
 end
