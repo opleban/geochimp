@@ -1,4 +1,5 @@
 get '/' do
+  @surveys = Survey.all
   erb :map_view
   #login page
   #graphic

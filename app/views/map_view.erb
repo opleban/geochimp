@@ -8,7 +8,7 @@
     <% if @surveys %>
     <ul>
       <% @surveys.each do |survey| %>
-      <li id="<%= survey.id %>">
+      <li class="survey" id="<%= survey.id %>">
         <%= survey.title %>
       </li>
       <% end %>
