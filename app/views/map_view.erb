@@ -1,18 +1,20 @@
 <div class="content_container">
   <h1>GeoMonkey</h1>
 
-  <div id="map" class=".span_6_of_9"></div>
+  <div id="map"></div>
 
-  <div id="surveys_container" class="float_left">
+  <div id="surveys_container" class="float_left span_3_of_9">
     <h2>Surveys</h2>
     <% if @surveys %>
     <ul>
       <% @surveys.each do |survey| %>
-      <li id="s<%= survey.id %>">
+      <li id="<%= survey.id %>">
         <%= survey.title %>
       </li>
       <% end %>
     </ul>
     <% end %>
+  </div>
+  <div id="questions_container" class="float_right span_3_of_9">
   </div>
 </div>

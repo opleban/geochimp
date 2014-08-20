@@ -16,12 +16,14 @@ function eventDelegator(e){
   e.preventDefault();
   var $target = $(e.target);
   switch($target.attr("class")){
+    case("survey"):
+      getSurveyQuestionsAndResponses(e);
+      break;
     case("question"):
-    getResponses(e);
-    break;
+      showResponses(e);
+      break;
     case("user"):
-    deleteTodo(e);
-    break;
+      break;
   }
 }
 
@@ -29,11 +31,30 @@ function eventDelegator(e){
 if ($('#map'))
   initializeMap()
 
-// function getResponses(e){
-//   ajaxRequest = $.ajax({
-//     url: "/questions/"+ e.target.attr("id")+/responses"",
-//   })
-// }
+function getAndShowResponses(e){
+  ajaxRequest = $.ajax({
+    url: "/questions/"+ e.target.attr("id")+"/responses",
+    type: 'get'
+  }).done(mapResponses)
+
+  function mapResponses(data){
+    parseResponses(data);
+    placeResponsesOnMap;
+    function parseResponses(data){
+
+    }
+  }
+}
+
+function getSurveyQuestions(e){
+  ajaxRequest = $.ajax({
+    url: "/surveys/" + e.target.attr("id"),
+    type: 'get'
+  }).done(function(data){
+    $("#questions_container").empty();
+    $("#questions_container").append(data.questions_html);
+  }
+}
 
 
 // L.marker([37.78, -122.40]).addTo(map)

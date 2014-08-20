@@ -1,7 +1,7 @@
 <h2>Questions</h2>
-<ul class=".span_3_of_9 float_right">
+<ul class="span_3_of_9 float_right">
   <%= @questions.each do |question| %>
-    <li id="q<%= question.id %>">
+    <li class="question" id="<%= question.id %>">
       <%= question.content %>
     </li>
   <%= end %>

@@ -24,6 +24,11 @@ get "/surveys" do
 end
 
 get "/surveys/:id" do
+  @survey = Survey.find(params[:id])
+  @questions = @survey.questions
+  questions_html = erb :question_list, layout => false
+  content_type :json
+  {questions_html:questions_html}.to_json
   #individual survey
   #lists all questions in survey
 end
@@ -44,9 +49,9 @@ delete "/surveys/:id/delete" do
 end
 
 get "/questions/:id/responses" do
-  question = Question.find(params[:id])
+  @question = Question.find(params[:id])
   responses = questions.responses
   respondents = responses.map{ |response| response.user}
   content_type :json
-  {question:question, responses:responses, respondents:respondents}.to_json
+  {responses:responses, respondents:respondents}.to_json
 end
