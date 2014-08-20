@@ -1,14 +1,22 @@
-get "/" do
-  erb :login
+get '/' do
+  erb :index
   #login page
   #graphic
 end
 
-get "/users/:id" do
+get '/geocode' do
+  coordinates = HereGeocoder::Class.new().geocode(params[:address]) if params[:address]
+  content_type :json
+  coordinates
+end
+
+get '/users/:id' do
   #user profile view
   #view username and address
   #email
+  #surveys
 end
+
 
 get "/surveys" do
   #list of all surveys
@@ -35,7 +43,7 @@ delete "/surveys/:id/delete" do
   #will allow the option to delete a survey and all associated questions
 end
 
-
-
-
-
+get "/questions/:id/responses" do
+  @questions = Question.find(params[:id])
+  @responses =
+end
