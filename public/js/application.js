@@ -24,17 +24,6 @@ Survey.prototype = {
           url: "/questions/"+ $(this).attr("id")+"/responses",
           type: 'get'
         }).done(renderResponses);
-
-        function renderResponses(data){
-          var currentResponses = []
-          for (i=0; i< data.responses.length; i++){
-            var response = new Response(data.responses[i]);
-            var popup = L.popup().setContent(response.name +"<br/>" + response.content + "<br/>" + response.address + "<br/>");
-            currentResponses.push(L.marker([response.latitude, response.longitude]).bindPopup(popup));
-            console.log(currentResponses);
-          }
-          L.layerGroup(currentResponses).addTo(controller.map);
-        }
       }
     }
   }
@@ -68,9 +57,16 @@ function Map(){
   this.map = initializeMap();
 }
 
-Map.prototype = {
-  createResponsePins: function(){
 
+Map.prototype = {
+  createResponsePins: function(data){
+    var currentResponses = []
+    for (i=0; i< data.responses.length; i++){
+      var response = new Response(data.responses[i]);
+      var popup = L.popup().setContent(response.name +"<br/>" + response.content + "<br/>" + response.address + "<br/>");
+      currentResponses.push(L.marker([response.latitude, response.longitude]).bindPopup(popup));
+    }
+    L.layerGroup(currentResponses).addTo(this.map);
   }
 }
 
