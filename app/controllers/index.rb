@@ -50,9 +50,9 @@ delete "/surveys/:id/delete" do
 end
 
 get "/questions/:id/responses" do
-  @question = Question.find(params[:id])
-  responses = questions.responses
-  respondents = responses.map{ |response| response.user}
+  question = Question.find(params[:id])
+  responses = question.responses
+  responses_and_respondents = responses.map{ |response| {user:response.user, response:response} }
   content_type :json
-  {responses:responses, respondents:respondents}.to_json
+  {question:question, responses:responses_and_respondents}.to_json
 end

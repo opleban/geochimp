@@ -1,4 +1,8 @@
-/*  GRID OF NINE   ============================================================================= */
+
+#map{
+  height:400px;
+}
+
 .content_container{
   width:80%;
   margin:auto;
@@ -16,6 +20,8 @@ ul{
   position:relative;
   float:right;
 }
+
+/*  GRID OF NINE   ============================================================================= */
 
 .span_9_of_9 {
   width: 100%;
@@ -86,6 +92,3 @@ ul{
   }
 }
 
-#map{
-  height:400px;
-}

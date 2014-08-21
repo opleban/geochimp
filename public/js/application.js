@@ -1,64 +1,78 @@
-// MVP
-//   show survey result page with mapped respondent data
-// initialize map
-function initializeMap(){
-  var map = L.map('map', { zoomControl:false }).setView([37.78, -122.40], 15);
-  var googleLayer = new L.Google("ROADMAP");
-  map.addLayer(googleLayer);
+function Survey(id){
+  this.survey_id = id;
 }
 
-function bindEvents() {
-  $('body').on("click", eventDelegator);
-}
-
-function eventDelegator(e){
-  e.preventDefault();
-  console.log(e);
-  var $target = $(e.target);
-
-  switch($target.attr("class")){
-    case("survey"):
-    getSurveyQuestions(e);
-    break;
-    case("question"):
-    getAndshowResponses(e);
-    break;
-    case("user"):
-    break;
-  }
-
-  function getAndShowResponses(e){
-    ajaxRequest = $.ajax({
-      url: "/questions/"+ e.target.attr("id")+"/responses",
+Survey.prototype = {
+  retrieveQuestions: function(e){
+    var ajaxRequest = $.ajax({
+      url:"/surveys/" + $(this.survey_id).attr("id"),
       type: 'get'
-    }).done(renderResponses);
+    }).done(function(data){
+      renderQuestions(data);
+      attachQuestionEventHandler();
+    });
 
-    function renderResponses(data){
-      var parsedData = parseResponses(data);
-      mapResponsesOnMap(parsedData);
+    function renderQuestions(data){
+      $("#questions_container").empty();
+      $("#questions_container").append(data.questions_html);
+    }
+    function attachQuestionEventHandler(){
+      $('.question').on("click", retrieveResponses);
 
-      function parseResponses(data){
-        console.log(data);
+      function retrieveResponses(){
+        ajaxRequest = $.ajax({
+          url: "/questions/"+ $(this).attr("id")+"/responses",
+          type: 'get'
+        }).done(renderResponses);
+
+        function renderResponses(data){
+          for (i=0; i< data.responses.length; i++){
+            response = new Response(data.responses[i]);
+            var popup = L.popup().setContent(response.name +"<br/>" + response.content + "<br/>" + response.address + "<br/>");
+            var marker = L.marker([response.latitude, response.longitude]).bindPopup(popup);
+            marker.addTo(controller.map);
+          }
+        }
       }
     }
   }
-    function getSurveyQuestions(e){
-      var ajaxRequest = $.ajax({
-        url:"/surveys/" + $(e.target).attr("id"),
-        type: 'get'
-      }).done(function(data){
-        $("#questions_container").empty();
-        $("#questions_container").append(data.questions_html);
-      });
-    }
-  }
-
-
-
-if ($('#map')){
-  bindEvents();
-  initializeMap();
 }
+
+function Response(info){
+  this.name = info.user.name;
+  this.address = info.user.address;
+  this.gender = info.user.gender;
+  this.username = info.user.username;
+  this.email = info.user.email;
+  this.content = info.response.content;
+  this.longitude = info.user.longitude;
+  this.latitude = info.user.latitude;
+}
+
+
+function Controller(){
+  this.map = initializeMap();
+}
+
+Controller.prototype.bindEvents = function(){
+  $('.survey').on("click", function(e){
+    var survey = new Survey(e.target);
+    survey.retrieveQuestions();
+  });
+};
+
+
+function initializeMap(){
+  var map = L.map('map').setView([37.782, -122.411], 15);
+  L.tileLayer('http://{s}.tiles.mapbox.com/v3/opleban.j9j3a8jb/{z}/{x}/{y}.png', {
+    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+    maxZoom: 18
+  }).addTo(map);
+  return map;
+}
+
+controller = new Controller();
+controller.bindEvents();
 
 // L.marker([37.78, -122.40]).addTo(map)
 //     .bindPopup('A pretty CSS3 popup. <br> Easily customizable.')

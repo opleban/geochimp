@@ -2,19 +2,20 @@
   <h1>GeoMonkey</h1>
 
   <div id="map"></div>
-
-  <div id="surveys_container" class="float_left span_3_of_9">
-    <h2>Surveys</h2>
-    <% if @surveys %>
-    <ul>
-      <% @surveys.each do |survey| %>
-      <li class="survey" id="<%= survey.id %>">
-        <%= survey.title %>
-      </li>
+  <div id="info_container">
+    <div id="surveys_container" class="float_left span_3_of_9">
+      <h2>Surveys</h2>
+      <% if @surveys %>
+      <ul>
+        <% @surveys.each do |survey| %>
+        <li class="survey" id="<%= survey.id %>">
+          <%= survey.title %>
+        </li>
+        <% end %>
+      </ul>
       <% end %>
-    </ul>
-    <% end %>
-  </div>
-  <div id="questions_container" class="float_right span_3_of_9">
+    </div>
+    <div id="questions_container" class="float_right span_3_of_9">
+    </div>
   </div>
 </div>
