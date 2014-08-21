@@ -13,7 +13,7 @@ gem 'activerecord', '~>4.1'
 
 gem 'rake'
 gem 'geocoder'
-gem 'thin'
+gem 'unicorn'
 
 group :test do
   gem 'shoulda-matchers'
