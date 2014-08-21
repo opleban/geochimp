@@ -15,8 +15,12 @@ function Response(info){
 
 // +++++++++++++++++++++++++++++++++++++
 
-function SurveyController(id){
+function SurveyViewControl(id){
   this.survey_id = id;
+}
+
+SurveyViewControl.prototype = {
+
 }
 
 function Controller(){
@@ -26,13 +30,13 @@ Controller.prototype = {
 
   getSurveyQuestions: function(e){
     e.preventDefault();
-    this.survey = new SurveyController(e.target);
+    this.surveyView = new SurveyViewControl(e.target);
     this.retrieveQuestions(e);
   },
 
   retrieveQuestions: function(e){
   var ajaxRequest = $.ajax({
-    url:"/surveys/" + $(this.survey.survey_id).attr("id"),
+    url:"/surveys/" + $(this.surveyView.survey_id).attr("id"),
     type: 'get'
   }).done(function(data){
     renderQuestions(data);
@@ -50,7 +54,7 @@ Controller.prototype = {
         ajaxRequest = $.ajax({
           url: "/questions/"+ $(e.target).attr("id")+"/responses",
           type: 'get'
-        }).done(this.mapController.renderResponses);
+        }).done(this.mapController.renderResponses.bind(this.mapController));
       }
     }
   },
@@ -66,34 +70,51 @@ function MapController(){
 };
 
 MapController.prototype = {
-  initializeMap: function(lat,longi){
-    this.map = L.map('map').setView([lat, longi], 15);
+  initializeMap: function(lat,longi, zoom){
+    this.map = L.map('map').setView([lat, longi], zoom);
   },
 
   setMapBoxTileLayer: function(){
     L.tileLayer('http://{s}.tiles.mapbox.com/v3/opleban.j9j3a8jb/{z}/{x}/{y}.png',
       {attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>', maxZoom: 18 }).addTo(this.map);
      },
+  setEsriTileLayer: function(){
+    L.esri.basemapLayer("Imagery").addTo(this.map);
+  },
 
-  renderResponses: function(data){
+  createMarkers: function(data){
     var responseMarkers = []
     for (i=0; i< data.responses.length; i++){
       var response = new Response(data.responses[i]);
       var popup = L.popup().setContent(response.name +"<br/>" + response.content + "<br/>" + response.address + "<br/>");
       responseMarkers.push(L.marker([response.latitude, response.longitude]).bindPopup(popup));
-      }
+    }
     return responseMarkers;
   },
 
   renderMarkers: function(markers){
-    L.layerGroup(markers).addTo(this.map);
+    if (this.responseLayer)
+      this.clearExistingMarkers();
+    this.responseLayer = L.layerGroup(markers);
+    this.responseLayer.addTo(this.map);
+  },
+
+  clearExistingMarkers: function(){
+    console.log(this);
+    this.map.removeLayer(this.responseLayer);
+  },
+
+  renderResponses: function(data){
+    var markers = this.createMarkers(data);
+    this.renderMarkers(markers);
   }
 };
 
 var controller = new Controller();
 var mapController = new MapController();
-mapController.initializeMap(37.782, -122.411);
-mapController.setMapBoxTileLayer();
+mapController.initializeMap(33.461866, -3.970064, 16);
+// mapController.setMapBoxTileLayer();
+mapController.setEsriTileLayer();
 controller.mapController = mapController;
 controller.bindEvents();
 

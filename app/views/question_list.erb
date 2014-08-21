@@ -1,8 +1,8 @@
 <h2>Questions</h2>
-<ul>
+<ul class='question_list'>
   <% @questions.each do |question| %>
     <li class="question" id="<%= question.id %>">
       <%= question.content %>
-    </li>
+    </li><br/>
   <% end %>
 </ul>

@@ -21,6 +21,23 @@ ul{
   float:right;
 }
 
+.survey, .question{
+  border-bottom: 1px solid black;
+  font-size: 1.4em;
+  padding:5px 0;
+  list-style-type: decimal;
+}
+
+.survey:nth-child(2n+1), .question:nth-child(2n+1){
+  background-color: #F3F2F1;
+}
+
+.survey:hover, .question:hover{
+  background-color: #9CE5FF;
+  cursor: pointer;
+  cursor: hand;
+}
+
 /*  GRID OF NINE   ============================================================================= */
 
 .span_9_of_9 {

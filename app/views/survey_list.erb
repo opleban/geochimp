@@ -1,0 +1,12 @@
+<div id="surveys_container" class="float_left span_3_of_9">
+  <h2>Surveys</h2>
+  <% if @surveys %>
+  <ul class="survey_list">
+    <% @surveys.each do |survey| %>
+    <li class="survey" id="<%= survey.id %>">
+      <%= survey.title %>
+    </li>
+    <% end %>
+  </ul>
+  <% end %>
+</div>

@@ -1,11 +1,12 @@
 require_relative '../spec/factories'
-3.times {
+1.times{
   user = FactoryGirl.create :user
-  rand(6).times {
+  10.times {
     survey = FactoryGirl.create :survey, :user => user
-      rand(10).times{
-        question = FactoryGirl.create :question, :survey => survey
-      rand(50).times {
+    5.times{
+      question = FactoryGirl.create :question, :survey => survey
+      20.times{
+        user = FactoryGirl.create :user
         FactoryGirl.create :response, :user => user, :question => question
       }
     }
