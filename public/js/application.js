@@ -26,12 +26,14 @@ Survey.prototype = {
         }).done(renderResponses);
 
         function renderResponses(data){
+          var currentResponses = []
           for (i=0; i< data.responses.length; i++){
-            response = new Response(data.responses[i]);
+            var response = new Response(data.responses[i]);
             var popup = L.popup().setContent(response.name +"<br/>" + response.content + "<br/>" + response.address + "<br/>");
-            var marker = L.marker([response.latitude, response.longitude]).bindPopup(popup);
-            marker.addTo(controller.map);
+            currentResponses.push(L.marker([response.latitude, response.longitude]).bindPopup(popup));
+            console.log(currentResponses);
           }
+          L.layerGroup(currentResponses).addTo(controller.map);
         }
       }
     }
@@ -51,7 +53,8 @@ function Response(info){
 
 
 function Controller(){
-  this.map = initializeMap();
+  if $('#map')
+    Controller.map_model = Map();
 }
 
 Controller.prototype.bindEvents = function(){
@@ -60,6 +63,16 @@ Controller.prototype.bindEvents = function(){
     survey.retrieveQuestions();
   });
 };
+
+function Map(){
+  this.map = initializeMap();
+}
+
+Map.prototype = {
+  createResponsePins: function(){
+
+  }
+}
 
 
 function initializeMap(){
