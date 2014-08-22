@@ -9,8 +9,8 @@ FactoryGirl.define do
     email { Faker::Internet.email }
     name { Faker::Name.name }
     address {Faker::Address.street_address}
-    longitude {((rand * (0.015)) + -3.96).to_s}
-    latitude {((rand * (0.01)) + 33.4).to_s}
+    longitude {((rand * (0.015)) + -4.97).to_s}
+    latitude {((rand * (0.01)) + 34.06).to_s}
     phone_number {Faker::PhoneNumber.phone_number}
   end
 

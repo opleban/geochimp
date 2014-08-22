@@ -1,0 +1,9 @@
+<h2>Responses</h2>
+<ul class="response_list">
+  <% @responses_and_respondents.each do |response| %>
+  <li class="response" id="response-<%= response[:response][:id] %>">
+    Name: <%= response[:user][:name] %> </br>
+    Response: <%= response[:response][:content] %>
+  </li>
+  <% end %>
+</ul>

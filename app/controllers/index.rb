@@ -52,7 +52,8 @@ end
 get "/questions/:id/responses" do
   question = Question.find(params[:id])
   responses = question.responses
-  responses_and_respondents = responses.map{ |response| {user:response.user, response:response} }
+  @responses_and_respondents = responses.map{ |response| {user:response.user, response:response} }
+  responses_html = erb :response_list, :layout => false
   content_type :json
-  {question:question, responses:responses_and_respondents}.to_json
+  {question:question, responses_html:responses_html, responses:@responses_and_respondents}.to_json
 end
