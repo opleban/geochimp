@@ -19,6 +19,28 @@ function SurveyViewControl(id){
   this.surveyId = id;
 }
 
+function View(){
+}
+
+View.prototype = {
+  renderResponses: function(data){
+    $("#responses_container").empty();
+    $("#responses_container").append(data.responses_html)
+    view.renderResponsesOnMap(data);
+  },
+
+  renderResponsesOnMap: function(data){
+    var markers = mapController.createMarkers(data);
+    mapController.renderMarkers(markers);
+  },
+
+  renderQuestions: function(data){
+      $("#responses_container").empty();
+      $("#questions_container").empty();
+      $("#questions_container").append(data.questions_html);
+    }
+}
+
 function Controller(){
 }
 
@@ -32,59 +54,41 @@ Controller.prototype = {
     this.retrieveQuestions(e);
   },
 
-  renderResponses: function(data){
-    $("#responses_container").empty();
-    $("#responses_container").append(data.responses_html)
-    $('.response').on("click", this.showMarker.bind(this));
-    this.mapController.renderResponsesOnMap(data);
-  },
-
   retrieveQuestions: function(e){
     var ajaxRequest = $.ajax({
       url:"/surveys/" + $(this.surveyView.surveyId).attr("id"),
       type: 'get'
-    }).done(function(data){
-      renderQuestions(data);
-      attachQuestionEventHandler();
-    });
-
-    function renderQuestions(data){
-      $("#responses_container").empty();
-      $("#questions_container").empty();
-      $("#questions_container").append(data.questions_html);
-    }
-
-    function attachQuestionEventHandler(){
-      $('.question').on("click", retrieveResponses.bind(this));
-
-      function retrieveResponses(e){
-        $(".question").removeClass("current");
-        $(e.target).addClass("current");
-        var ajaxRequest = $.ajax({
-          url: "/questions/"+ $(e.target).attr("id")+"/responses",
-          type: 'get'
-        }).done(this.controller.renderResponses.bind(this.controller));
-      }
-    }
+    }).done(view.renderQuestions).then(controller.attachQuestionEventHandler);
   },
 
-  showMarker: function(e){
-    $(".response").removeClass("current");
+  attachQuestionEventHandler: function(){
+    $('.question').on("click", controller.retrieveResponses);
+  },
+
+  retrieveResponses: function(e){
+    $(".question").removeClass("current");
     $(e.target).addClass("current");
-    // this.mapController.centerMapOnResponse(e);
+    var ajaxRequest = $.ajax({
+      url: "/questions/"+ $(e.target).attr("id")+"/responses",
+      type: 'get'
+    }).done(view.renderResponses);
   },
 
   bindEvents: function(){
     $('.survey').on("click", this.getSurveyQuestions.bind(this));
-  },
+  }
+
+  // showMarker: function(e){
+  //   $(".response").removeClass("current");
+  //   $(e.target).addClass("current");
+  //   this.mapController.centerMapOnResponse(e);
+  // },
 };
 
 // +++++++++++++++++++++++++++++++++++++++++
 
 function MapController(){
 };
-
-var customMarker = L.marker.extend({options:{id:"response-"+response.response_id}});
 
 MapController.prototype = {
   initializeMap: function(lat,longi, zoom){
@@ -104,52 +108,28 @@ MapController.prototype = {
     for (i=0; i< data.responses.length; i++){
       var response = new Response(data.responses[i]);
       var popup = L.popup().setContent(response.name +"<br/>" + response.content + "<br/>" + response.address + "<br/>");
-      var marker = new customMarker.([response.latitude, response.longitude], {id:"response-"+response.response_id}).bindPopup(popup);
-      });
+      var marker = L.marker([response.latitude, response.longitude]).bindPopup(popup);
       responseMarkers.push(marker);
-    this.responseMarkers = responseMarkers;
-    $('.response').on("click", function(e){
-      e.preventDefault();
-      for (var i=0; i<this.responseMarkers.length; i++){
-        var curMarker = this.responseMarkers[i]
-        if (curMarker.id === $(e.target).attr("id"))
-          curMarker.togglePopup();
-    }).bind(this);
-  }
-},
+    }
+    return responseMarkers;
+  },
 
-  renderMarkers: function(){
+  renderMarkers: function(markers){
     if (this.responseLayer)
       this.clearExistingMarkers();
-    this.responseLayer = L.layerGroup(this.responseMarkers);
+    this.responseLayer = L.layerGroup(markers);
     this.responseLayer.addTo(this.map);
   },
 
   clearExistingMarkers: function(){
     this.map.removeLayer(this.responseLayer);
   },
-
-  renderResponsesOnMap: function(data){
-    var markers = this.createMarkers(data);
-    this.renderMarkers(markers);
-  },
-
-  onMapClick:function(e){
-    var popup = L.popup();
-    popup.setLatLng(e.latlng)
-    popup.setContent("You clicked the map at" + e.latlng.toString())
-    popup.openOn(this);
-  },
-
-  bindEvents:function(){
-    this.map.on('click', this.onMapClick);
-  }
 };
 
 var controller = new Controller();
+var view = new View();
 var mapController = new MapController();
 mapController.initializeMap(34.06543, -4.96194, 15);
-// mapController.setMapBoxTileLayer();
 mapController.setEsriTileLayer();
 controller.mapController = mapController;
 controller.bindEvents();
