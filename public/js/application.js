@@ -84,6 +84,8 @@ Controller.prototype = {
 function MapController(){
 };
 
+var customMarker = L.marker.extend({options:{id:"response-"+response.response_id}});
+
 MapController.prototype = {
   initializeMap: function(lat,longi, zoom){
     this.map = L.map('map').setView([lat, longi], zoom);
@@ -102,19 +104,24 @@ MapController.prototype = {
     for (i=0; i< data.responses.length; i++){
       var response = new Response(data.responses[i]);
       var popup = L.popup().setContent(response.name +"<br/>" + response.content + "<br/>" + response.address + "<br/>");
-      var marker = L.marker([response.latitude, response.longitude]).bindPopup(popup);
-      $("#response-"+response.response_id).on("click", function(e){
-        marker.togglePopup()
+      var marker = new customMarker.([response.latitude, response.longitude], {id:"response-"+response.response_id}).bindPopup(popup);
       });
       responseMarkers.push(marker);
-    }
-    return responseMarkers;
-  },
+    this.responseMarkers = responseMarkers;
+    $('.response').on("click", function(e){
+      e.preventDefault();
+      for (var i=0; i<this.responseMarkers.length; i++){
+        var curMarker = this.responseMarkers[i]
+        if (curMarker.id === $(e.target).attr("id"))
+          curMarker.togglePopup();
+    }).bind(this);
+  }
+},
 
-  renderMarkers: function(markers){
+  renderMarkers: function(){
     if (this.responseLayer)
       this.clearExistingMarkers();
-    this.responseLayer = L.layerGroup(markers);
+    this.responseLayer = L.layerGroup(this.responseMarkers);
     this.responseLayer.addTo(this.map);
   },
 
@@ -146,4 +153,3 @@ mapController.initializeMap(34.06543, -4.96194, 15);
 mapController.setEsriTileLayer();
 controller.mapController = mapController;
 controller.bindEvents();
-controller.mapController.bindEvents();
