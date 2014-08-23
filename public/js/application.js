@@ -15,9 +15,6 @@ function Response(info){
 
 // +++++++++++++++++++++++++++++++++++++
 
-function SurveyViewControl(id){
-  this.surveyId = id;
-}
 
 function View(){
 }
@@ -26,52 +23,64 @@ View.prototype = {
   renderResponses: function(data){
     $("#responses_container").empty();
     $("#responses_container").append(data.responses_html)
-    view.renderResponsesOnMap(data);
   },
 
-  renderResponsesOnMap: function(data){
-    var markers = mapController.createMarkers(data);
-    mapController.renderMarkers(markers);
+  changeSurveyButton: function(e){
+    $(".survey").removeClass("current"); // Move to View
+    $(e.target).addClass("current");
+  },
+
+  changeQuestionButton: function(e){
+    $(".question").removeClass("current");
+    $(e.target).addClass("current");
   },
 
   renderQuestions: function(data){
-      $("#responses_container").empty();
-      $("#questions_container").empty();
-      $("#questions_container").append(data.questions_html);
-    }
+    $("#responses_container").empty();
+    $("#questions_container").empty();
+    $("#questions_container").append(data.questions_html);
+  }
 }
 
 function Controller(){
+  this.view = new View();
+  this.mapController = new MapController();
+  this.mapController.initializeMap(34.06543, -4.96194, 15);
+  this.mapController.setEsriTileLayer();
+  this.bindEvents();
 }
 
 Controller.prototype = {
 
   getSurveyQuestions: function(e){
-    e.preventDefault();
-    $(".survey").removeClass("current");
-    $(e.target).addClass("current");
-    this.surveyView = new SurveyViewControl(e.target);
+    this.view.changeSurveyButton(e);
     this.retrieveQuestions(e);
   },
 
   retrieveQuestions: function(e){
     var ajaxRequest = $.ajax({
-      url:"/surveys/" + $(this.surveyView.surveyId).attr("id"),
+      url:"/surveys/" + $(e.target).attr("id"),
       type: 'get'
-    }).done(view.renderQuestions).then(controller.attachQuestionEventHandler);
+    }).done(function(data){
+      this.view.renderQuestions(data);
+      this.attachQuestionEventHandler(data);
+      }.bind(this));
   },
 
   attachQuestionEventHandler: function(){
-    $('.question').on("click", controller.retrieveResponses);
+    $('.question').on("click", this.retrieveResponses.bind(this));
   },
 
   retrieveResponses: function(e){
-    $(".question").removeClass("current");
-    $(e.target).addClass("current");
+    this.view.changeQuestionButton(e);
     var ajaxRequest = $.ajax({
       url: "/questions/"+ $(e.target).attr("id")+"/responses",
       type: 'get'
-    }).done(view.renderResponses);
+    }).
+    done(function(data){
+      this.view.renderResponses(data);
+      this.mapController.renderResponsesOnMap(data);
+    }.bind(this));
   },
 
   bindEvents: function(){
@@ -99,6 +108,7 @@ MapController.prototype = {
     L.tileLayer('http://{s}.tiles.mapbox.com/v3/opleban.j9j3a8jb/{z}/{x}/{y}.png',
       {attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>', maxZoom: 18 }).addTo(this.map);
      },
+
   setEsriTileLayer: function(){
     L.esri.basemapLayer("Imagery").addTo(this.map);
   },
@@ -114,6 +124,12 @@ MapController.prototype = {
     return responseMarkers;
   },
 
+  renderResponsesOnMap: function(data){
+    var markers = this.createMarkers(data);
+    this.renderMarkers(markers);
+  },
+
+
   renderMarkers: function(markers){
     if (this.responseLayer)
       this.clearExistingMarkers();
@@ -123,13 +139,7 @@ MapController.prototype = {
 
   clearExistingMarkers: function(){
     this.map.removeLayer(this.responseLayer);
-  },
+  }
 };
 
-var controller = new Controller();
-var view = new View();
-var mapController = new MapController();
-mapController.initializeMap(34.06543, -4.96194, 15);
-mapController.setEsriTileLayer();
-controller.mapController = mapController;
-controller.bindEvents();
+controller = new Controller();
