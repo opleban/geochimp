@@ -77,8 +77,13 @@ View.prototype = {
 }
 
 function Controller(){
-  this.map = initializeMap();
+  this.view = new View();
+  this.mapController = new MapController();
+  this.mapController.initializeMap(34.06543, -4.96194, 15);
+  this.mapController.setEsriTileLayer();
+  this.bindEvents();
 }
+
 Controller.prototype = {
 
   getSurveyData: function(e){
@@ -86,7 +91,7 @@ Controller.prototype = {
     this.retrieveSurveyData(e);
   },
 
-  retrieveSurveyData(): function(e){
+  retrieveSurveyData: function(e){
     var ajaxRequest = $.ajax({
       url: "/surveys/" + $(e.target).attr("id"),
       type: "get"
@@ -137,8 +142,6 @@ Controller.prototype = {
   bindEvents: function(){
     $('.survey').on("click", this.getSurveyQuestions.bind(this));
   }
-
-
 };
 
 // +++++++++++++++++++++++++++++++++++++++++
@@ -146,15 +149,48 @@ Controller.prototype = {
 function MapController(){
 };
 
+MapController.prototype = {
+  initializeMap: function(lat,longi, zoom){
+    this.map = L.map('map').setView([lat, longi], zoom);
+  },
 
-function initializeMap(){
-  var map = L.map('map').setView([37.782, -122.411], 15);
-  L.tileLayer('http://{s}.tiles.mapbox.com/v3/opleban.j9j3a8jb/{z}/{x}/{y}.png', {
-    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-    maxZoom: 18
-  }).addTo(map);
-  return map;
-}
+  setMapBoxTileLayer: function(){
+    L.tileLayer('http://{s}.tiles.mapbox.com/v3/opleban.j9j3a8jb/{z}/{x}/{y}.png',
+      {attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>', maxZoom: 18 }).addTo(this.map);
+     },
+
+  setEsriTileLayer: function(){
+    L.esri.basemapLayer("Imagery").addTo(this.map);
+  },
+
+  createMarkers: function(data){
+    var responseMarkers = [];
+    for (i=0; i< data.responses.length; i++){
+      var response = new Response(data.responses[i]);
+      var popup = L.popup().setContent(response.name +"<br/>" + response.content + "<br/>" + response.address + "<br/>");
+      var marker = L.marker([response.latitude, response.longitude]).bindPopup(popup);
+      responseMarkers.push(marker);
+    }
+    return responseMarkers;
+  },
+
+  renderResponsesOnMap: function(data){
+    var markers = this.createMarkers(data);
+    this.renderMarkers(markers);
+  },
+
+
+  renderMarkers: function(markers){
+    if (this.responseLayer)
+      this.clearExistingMarkers();
+    this.responseLayer = L.layerGroup(markers);
+    this.responseLayer.addTo(this.map);
+  },
+
+  clearExistingMarkers: function(){
+    this.map.removeLayer(this.responseLayer);
+  }
+};
 
 controller = new Controller();
-controller.bindEvents();
+
