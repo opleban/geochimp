@@ -1,9 +1,11 @@
 get '/' do
-  @surveys = Survey.all
-  erb :map_view
+
+  erb :sign_in
   #login page
   #graphic
 end
+
+get ''
 
 get '/geocode' do
   coordinates = HereGeocoder::Class.new().geocode(params[:address]) if params[:address]
@@ -12,6 +14,8 @@ get '/geocode' do
 end
 
 get '/users/:id' do
+  @surveys = Survey.all
+  erb :map_view
   #user profile view
   #view username and address
   #email
@@ -28,10 +32,12 @@ get "/surveys/:id" do
   @survey = Survey.find(params[:id])
   @questions = @survey.questions
   questions_html = erb :question_list, :layout => false
+  @questions = @questions.map do |question|
+    responses = questions.responses map{ |response| content: response.content, user: response.user }
+    {content:question.content, responses:responses}
+  end
   content_type :json
-  {questions_html:questions_html}.to_json
-  #individual survey
-  #lists all questions in survey
+  {questions:questions, questions_html:questions_html}.to_json
 end
 
 get "/surveys/new" do
@@ -49,6 +55,7 @@ delete "/surveys/:id/delete" do
   #will allow the option to delete a survey and all associated questions
 end
 
+<<<<<<< Updated upstream
 get "/questions/:id/responses" do
   question = Question.find(params[:id])
   responses = question.responses
@@ -56,3 +63,12 @@ get "/questions/:id/responses" do
   content_type :json
   {question:question, responses:responses_and_respondents}.to_json
 end
+=======
+# get "/questions/:id/responses" do
+#   question = Question.find(params[:id])
+#   @responses = question.responses
+#   responses_html = erb :response_list, :layout => false
+#   content_type :json
+#   {question:question, responses_html:responses_html, responses:@responses}.to_json
+# end
+>>>>>>> Stashed changes
