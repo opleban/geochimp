@@ -27,15 +27,15 @@ get "/surveys" do
 end
 
 get "/surveys/:id" do
-  @survey = Survey.find(params[:id])
-  @questions = @survey.questions
-  questions_html = erb :question_list, :layout => false
-  @questions = @questions.to_a.map do |question|
-    responses = question.responses.map{ |response| [content: response.content, user: response.user] }
-    {content:question.content, responses:responses}
+  survey = Survey.find(params[:id])
+  questions = survey.questions.to_a.map do |question|
+    responses = question.responses.map do |response|
+      {content: response.content,created_at: response.created_at, id:response.id, user: response.user}
+    end
+    {content:question.content, created_at:question.created_at, id:question.id, responses:responses}
   end
   content_type :json
-  {questions:@questions, questions_html:questions_html}.to_json
+  {survey: survey, questions:questions}.to_json
 end
 
 get "/surveys/new" do

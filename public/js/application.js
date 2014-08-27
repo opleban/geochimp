@@ -1,38 +1,49 @@
-function Survey(info){
-  this.title = info.title;
-  this.created_at = info.created_at;
+function Survey(survey_info){
+  this.title = survey_info.title;
+  this.created_at = survey_info.created_at;
   this.questions = [];
 };
 
 Survey.prototype = {
-  getQuestions: function(questions){
-    for(var i=0; i<questions.length; i++){
-      var question = new Question(questions[i].content, questions.created_at, responses);
-      question.responses = question.getResponses(questions[i].responses)
+  parseSurveyData: function(data){
+    for(var i=0; i<data.questions.length; i++){
+      var question_data = data.questions[i];
+      var question = new Question({content: question_data.content, created_at:question_data.created_at, id: question_data.id});
+      question.getResponses(question_data.responses);
       this.questions.push(question);
+    }
+  },
+  findQuestionById: function(id){
+    for (var i=0; i< this.questions.length; i++){
+      if (this.questions[i].id == id){
+        return this.questions[i];
+      }
     }
   }
 };
 
-function Question(info){
-  this.content = info.content;
+
+function Question(data){
+  this.content = data.content;
+  this.created_at = data.created_at;
+  this.id = data.id
   this.responses = [];
-  this.created_at = info.created_at;
 };
 
 Question.prototype = {
   getResponses: function(responses){
     for (var i=0; i<responses.length; i++){
-      var user = User.new(responses[i].user);
-      this.responses.push(new Response(responses[i].content, responses.created_at, user));
+      var responder = new User(responses[i].user);
+      this.responses.push(new Response({content:responses[i].content, created_at:responses[i].created_at, user:responder, id:responses[i].id}));
     }
-  }
+  },
 };
 
-function Response(info){
-  this.user = info.user;
-  this.response = info.response;
-  this.created_at = info.created_at;
+function Response(response_info){
+  this.user = response_info.user;
+  this.id = response_info.id
+  this.content = response_info.content;
+  this.created_at = response_info.created_at;
 };
 
 function User(info){
@@ -54,9 +65,13 @@ function View(){
 }
 
 View.prototype = {
-  renderResponses: function(data){
+
+  renderResponses: function(responses_data){
+    var responseListTemplate = $("#response-list-template").html();
+    var compiledTemplate = doT.template(responseListTemplate)
+    var responseList = compiledTemplate({responses:responses_data});
     $("#responses_container").empty();
-    $("#responses_container").append(data.responses_html)
+    $("#responses_container").html(responseList);
   },
 
   changeSurveyButton: function(e){
@@ -69,11 +84,15 @@ View.prototype = {
     $(e.target).addClass("current");
   },
 
-  renderQuestions: function(data){
-    $("#responses_container").empty();
+  renderQuestions: function(questions_data){
+    var questionListTemplate = $("#question-list-template").html();
+    var compiledTemplate = doT.template(questionListTemplate)
+    var questionList = compiledTemplate({questions:questions_data});
     $("#questions_container").empty();
-    $("#questions_container").append(data.questions_html);
+    $("#responses_container").empty();
+    $("#questions_container").html(questionList);
   }
+
 }
 
 function Controller(){
@@ -86,9 +105,13 @@ function Controller(){
 
 Controller.prototype = {
 
-  getSurveyData: function(e){
-    this.view.changeSurveyButton(e);
-    this.retrieveSurveyData(e);
+  // getSurveyData: function(e){
+  //   this.view.changeSurveyButton(e);
+  //   this.assignDataToModel(e);
+  // },
+
+  bindEvents: function(){
+    $('.survey').on("click", this.retrieveSurveyData.bind(this));
   },
 
   retrieveSurveyData: function(e){
@@ -97,50 +120,44 @@ Controller.prototype = {
       type: "get"
     }).
     done(function(data){
+      this.view.changeSurveyButton(e)
       this.assignDataToModel(data);
-      this.view.renderQuestions();
+      this.view.renderQuestions(this.survey.questions);
+      this.attachQuestionEventHandler();
     }.bind(this))
   },
 
   assignDataToModel: function(data){
-    this.survey = new Survey(data.survey.title, data.survey.created_at)
-    this.survey.parseQuestions(data)
+    this.survey = new Survey({title:data.survey.title, created_at:data.survey.created_at})
+    this.survey.parseSurveyData(data)
   },
 
-  getSurveyQuestions: function(e){
-    this.retrieveQuestions(e);
-    this.view.changeSurveyButton(e);
-  },
+  // getSurveyQuestions: function(e){
+  //   this.retrieveQuestions(e);
+  //   this.view.changeSurveyButton(e);
+  // },
 
-  retrieveQuestions: function(e){
-    var ajaxRequest = $.ajax({
-      url:"/surveys/" + $(e.target).attr("id"),
-      type: 'get'
-    }).
-    done(function(data){
-      this.view.renderQuestions(data);
-      this.attachQuestionEventHandler(data);
-      }.bind(this));
-  },
+  // retrieveQuestions: function(e){
+  //   var ajaxRequest = $.ajax({
+  //     url:"/surveys/" + $(e.target).attr("id"),
+  //     type: 'get'
+  //   }).
+  //   done(function(data){
+  //     this.view.renderQuestions(data);
+  //     this.attachQuestionEventHandler(data);
+  //     }.bind(this));
+  // },
 
   attachQuestionEventHandler: function(){
-    $('.question').on("click", this.retrieveResponses.bind(this));
+    $('.question').on("click", this.getResponses.bind(this));
   },
 
-  retrieveResponses: function(e){
+  getResponses: function(e){
+    var question_id = $(e.target).attr("id")
     this.view.changeQuestionButton(e);
-    var ajaxRequest = $.ajax({
-      url: "/questions/"+ $(e.target).attr("id")+"/responses",
-      type: 'get'
-    }).
-    done(function(data){
-      this.view.renderResponses(data);
-      this.mapController.renderResponsesOnMap(data);
-    }.bind(this));
-  },
-
-  bindEvents: function(){
-    $('.survey').on("click", this.getSurveyQuestions.bind(this));
+    var question = this.survey.findQuestionById(question_id);
+    this.view.renderResponses(question.responses);
+    this.mapController.renderResponsesOnMap(question.responses);
   }
 };
 
@@ -163,12 +180,12 @@ MapController.prototype = {
     L.esri.basemapLayer("Imagery").addTo(this.map);
   },
 
-  createMarkers: function(data){
+  createMarkers: function(responses){
     var responseMarkers = [];
-    for (i=0; i< data.responses.length; i++){
-      var response = new Response(data.responses[i]);
-      var popup = L.popup().setContent(response.name +"<br/>" + response.content + "<br/>" + response.address + "<br/>");
-      var marker = L.marker([response.latitude, response.longitude]).bindPopup(popup);
+    for (i=0; i< responses.length; i++){
+      var response = responses[i];
+      var popup = L.popup().setContent(response.user.name +"<br/>" + response.content + "<br/>" + response.user.address + "<br/>");
+      var marker = L.marker([response.user.latitude, response.user.longitude]).bindPopup(popup);
       responseMarkers.push(marker);
     }
     return responseMarkers;
