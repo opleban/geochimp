@@ -39,6 +39,7 @@ Question.prototype = {
   },
 };
 
+
 function Response(response_info){
   this.user = response_info.user;
   this.id = response_info.id
@@ -132,21 +133,6 @@ Controller.prototype = {
     this.survey.parseSurveyData(data)
   },
 
-  // getSurveyQuestions: function(e){
-  //   this.retrieveQuestions(e);
-  //   this.view.changeSurveyButton(e);
-  // },
-
-  // retrieveQuestions: function(e){
-  //   var ajaxRequest = $.ajax({
-  //     url:"/surveys/" + $(e.target).attr("id"),
-  //     type: 'get'
-  //   }).
-  //   done(function(data){
-  //     this.view.renderQuestions(data);
-  //     this.attachQuestionEventHandler(data);
-  //     }.bind(this));
-  // },
 
   attachQuestionEventHandler: function(){
     $('.question').on("click", this.getResponses.bind(this));
