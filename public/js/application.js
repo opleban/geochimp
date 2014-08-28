@@ -106,11 +106,6 @@ function Controller(){
 
 Controller.prototype = {
 
-  // getSurveyData: function(e){
-  //   this.view.changeSurveyButton(e);
-  //   this.assignDataToModel(e);
-  // },
-
   bindEvents: function(){
     $('.survey').on("click", this.retrieveSurveyData.bind(this));
   },
@@ -121,7 +116,8 @@ Controller.prototype = {
       type: "get"
     }).
     done(function(data){
-      this.view.changeSurveyButton(e)
+      this.view.changeSurveyButton(e);
+      this.mapController.clearExistingMarkers();
       this.assignDataToModel(data);
       this.view.renderQuestions(this.survey.questions);
       this.attachQuestionEventHandler();
@@ -191,7 +187,8 @@ MapController.prototype = {
   },
 
   clearExistingMarkers: function(){
-    this.map.removeLayer(this.responseLayer);
+    if (this.responseLayer)
+      this.map.removeLayer(this.responseLayer);
   }
 };
 
