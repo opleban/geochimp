@@ -1,3 +1,6 @@
+// MVP
+// Move more functionality into the models
+// pub/sub pattern radio.js
 function Survey(survey_info){
   this.title = survey_info.title;
   this.created_at = survey_info.created_at;
@@ -13,6 +16,7 @@ Survey.prototype = {
       this.questions.push(question);
     }
   },
+
   findQuestionById: function(id){
     for (var i=0; i< this.questions.length; i++){
       if (this.questions[i].id == id){
@@ -39,7 +43,6 @@ Question.prototype = {
   },
 };
 
-
 function Response(response_info){
   this.user = response_info.user;
   this.id = response_info.id
@@ -57,10 +60,7 @@ function User(info){
   this.latitude = info.latitude;
 };
 
-
-
 // +++++++++++++++++++++++++++++++++++++
-
 
 function View(){
 }
@@ -120,8 +120,9 @@ Controller.prototype = {
       this.mapController.clearExistingMarkers();
       this.assignDataToModel(data);
       this.view.renderQuestions(this.survey.questions);
-      this.attachQuestionEventHandler();
+      this.attachQuestionEventHandler(); // move to question model
     }.bind(this))
+    // Add error handling
   },
 
   assignDataToModel: function(data){
@@ -168,6 +169,7 @@ MapController.prototype = {
       var response = responses[i];
       var popup = L.popup().setContent(response.user.name +"<br/>" + response.content + "<br/>" + response.user.address + "<br/>");
       var marker = L.marker([response.user.latitude, response.user.longitude]).bindPopup(popup);
+      marker.marker_id = "response-" + response.id;
       responseMarkers.push(marker);
     }
     return responseMarkers;
@@ -184,13 +186,24 @@ MapController.prototype = {
       this.clearExistingMarkers();
     this.responseLayer = L.layerGroup(markers);
     this.responseLayer.addTo(this.map);
+    $('.response_list').on("click", this.displayPopUp.bind(this));
   },
 
   clearExistingMarkers: function(){
     if (this.responseLayer)
       this.map.removeLayer(this.responseLayer);
+  },
+
+  displayPopUp: function(e){
+    var marker_id = $(e.target).attr("id");
+    for (var marker in this.responseLayer._layers){
+      console.log(this.responseLayer._layers[marker]);
+      if (marker_id === this.responseLayer._layers[marker].marker_id)
+        this.responseLayer._layers[marker].openPopup();
+    }
   }
 };
 
 controller = new Controller();
+
 
