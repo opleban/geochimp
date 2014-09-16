@@ -1,8 +1,6 @@
 get '/' do
-
-  erb :sign_in
-  #login page
-  #graphic
+  @surveys = Survey.all
+  erb :map_view
 end
 
 get '/geocode' do
@@ -12,8 +10,6 @@ get '/geocode' do
 end
 
 get '/users/:id' do
-  @surveys = Survey.all
-  erb :map_view
   #user profile view
   #view username and address
   #email
